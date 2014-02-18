@@ -1,9 +1,13 @@
+import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 import javax.swing.JDesktopPane;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JMenuBar;
 import javax.swing.JFrame;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -19,9 +23,14 @@ import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
- 
+
 import java.awt.event.*;
 import java.awt.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
  
 /*
  * InternalFrameDemo.java requires:
@@ -47,11 +56,59 @@ public class InternalFrameDemo extends JFrame
         //createFrame(); //create first "window" //took out so we don't have a starting note
         setContentPane(desktop);
         setJMenuBar(createMenuBar());
+        
+       
  
         //Make dragging a little faster but perhaps uglier.
         desktop.setDragMode(JDesktopPane.OUTLINE_DRAG_MODE);
+        
+        
+        
+        
     }
+    
+
  
+    public void DBConnect (String username, String password) {
+
+        Connection con = null;
+		try {
+			con = DriverManager.getConnection(
+			                     "130.157.166.29:3306",
+			                     username, password );
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+        Statement stmt = null;
+		try {
+			stmt = con.createStatement();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        ResultSet rs = null;
+		try {
+			rs = stmt.executeQuery("SELECT a, b, c FROM Table1");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+        try {
+			while (rs.next()) {
+			    int x = rs.getInt("a");
+			    String s = rs.getString("b");
+			    float f = rs.getFloat("c");
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+
+    
     protected JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
     	JMenu menu, submenu;
@@ -67,7 +124,7 @@ public class InternalFrameDemo extends JFrame
             	"The only menu in this program that has menu items");
     	menuBar.add(menu);
  
-   	 
+   	 	
   	 
 
     	submenu = new JMenu("Add New...");
@@ -240,7 +297,6 @@ public class InternalFrameDemo extends JFrame
         
         
         
-        
         try {
             frame.setSelected(true);
         } catch (java.beans.PropertyVetoException e) {}
@@ -263,10 +319,25 @@ public class InternalFrameDemo extends JFrame
         //Create and set up the window.
         InternalFrameDemo frame = new InternalFrameDemo();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
- 
-        //Display the window.
+      //Display the window.
         frame.setVisible(true);
+        
+        SplitPane sp = new SplitPane();
+        sp.setSize(200,200);
+        sp.setVisible(true);
+        frame.add(sp);
+       
+        
+       
+       
+ 
+        
     }
+    
+
+
+
+
  
     public static void main(String[] args) {
         //Schedule a job for the event-dispatching thread:
@@ -274,6 +345,12 @@ public class InternalFrameDemo extends JFrame
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 createAndShowGUI();
+                
+                
+            	
+            
+            		
+            	
             }
         });
     }
