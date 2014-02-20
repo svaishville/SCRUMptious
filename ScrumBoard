@@ -4,11 +4,14 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 import javax.swing.*;
+import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 class ScrumBoard extends JFrame
+				 implements ActionListener
 {
 	protected JPanel		treePanel;
 	protected JPanel		storyPanel;
@@ -24,11 +27,15 @@ class ScrumBoard extends JFrame
     JTextArea	storyField_Detail;
     JButton 	storyButton_OK;
     
+    private static String NEW_STORY = "New Story";
+    private static String UNDO = "Undo";
+    private static String SAVE = "Save";
+    
     // model data
     // ArrayList for stories, maybe a HashMap using key of story.id
     // maybe with different ArrayList with ptr to the stories; these would be group by or sorted or whatever
     // ArrayList for sprints;  as we add stories, we can add sprints on the fly
-    
+    DynamicTree d = new DynamicTree();
 	
 	public ScrumBoard()
 	{
@@ -44,7 +51,7 @@ class ScrumBoard extends JFrame
 		getContentPane().add( topPanel );
 
 		// Create the panels
-		createTreePanel();
+		
 		createStoryPanel();
 		createWallPanel();
 		
@@ -60,12 +67,13 @@ class ScrumBoard extends JFrame
 */
 		JPanel splitPaneTree = new JPanel();
 		splitPaneTree.setLayout( new BoxLayout(splitPaneTree, BoxLayout.Y_AXIS) );
-		splitPaneTree.add( treePanel );
+		splitPaneTree.add(d);
 		splitPaneTree.add( storyPanel );
 		
 		splitPaneWall.setLeftComponent( splitPaneTree );
 		splitPaneWall.setRightComponent( wallPanel );		
 	}
+
 
 	public void createTreePanel()
 	{
@@ -79,15 +87,17 @@ class ScrumBoard extends JFrame
 		
 		tree = new JTree(root);
 	    tree.setEditable(true);
-	    tree.getSelectionModel().setSelectionMode(TreeSelectionModel.CONTIGUOUS_TREE_SELECTION);
+	    tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 	    tree.setShowsRootHandles(true);
 
 		treePanel = new JPanel();
 		treePanel.setLayout( new BorderLayout() );
-	    treePanel.add( new JScrollPane(tree) );		
+	    treePanel.add( new JScrollPane(tree) );
+	    
 	    
 	}
 	
+
 	 private void createNodes(DefaultMutableTreeNode top, String name) {
 	        DefaultMutableTreeNode category = null;
 	        DefaultMutableTreeNode book = null;
@@ -139,27 +149,24 @@ class ScrumBoard extends JFrame
 	    storyButton_OK.setVerticalTextPosition(AbstractButton.BOTTOM);
 	    storyButton_OK.setHorizontalTextPosition(AbstractButton.CENTER);
         storyButton_OK.setAlignmentY(BOTTOM_ALIGNMENT);
+        storyButton_OK.setActionCommand(SAVE);
+        storyButton_OK.addActionListener(this);
  
-        JButton button2 = new JButton("Undo");
+        JButton button2 = new JButton("Remove");
         button2.setVerticalTextPosition(AbstractButton.BOTTOM);
         button2.setHorizontalTextPosition(AbstractButton.CENTER);
         button2.setAlignmentY(BOTTOM_ALIGNMENT);
+        button2.setActionCommand(UNDO);
+        button2.addActionListener(this);
 
         JButton newbutton = new JButton("New Story");
         newbutton.setVerticalTextPosition(AbstractButton.BOTTOM);
         newbutton.setHorizontalTextPosition(AbstractButton.CENTER);
         newbutton.setAlignmentY(BOTTOM_ALIGNMENT);
-        //Add listener here to add to tree
-        
-        newbutton.addActionListener(new ActionListener()
-        {
-        	public void actionPerformed(ActionEvent e)
-        	{
-        		JOptionPane.showMessageDialog(null, "Working!");
-        		//createNodes(, storyField_Title.getText());
-        		
-        	}
-        });
+        newbutton.setActionCommand(NEW_STORY);   //Adds listener
+        newbutton.addActionListener(this);
+        	
+     
         
         JPanel pane = new JPanel();
 //        pane.setBorder(BorderFactory.createTitledBorder(title));
@@ -170,6 +177,19 @@ class ScrumBoard extends JFrame
         pane.add(newbutton);
         return pane;
     }	
+    
+    public void actionPerformed(ActionEvent e)  //Handles actions
+	{
+		String command = e.getActionCommand();
+		
+		if(NEW_STORY.equals(command))
+			d.addObject(storyField_Title.getText());
+		else if((UNDO).equals(command))
+			d.removeCurrentNode();
+		else if((SAVE).equals(command))
+			JOptionPane.showMessageDialog(null, "Save that shit!");
+		
+	}
 	
 	public void createWallPanel()
 	{
