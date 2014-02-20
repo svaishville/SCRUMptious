@@ -1,7 +1,10 @@
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -67,16 +70,34 @@ class ScrumBoard extends JFrame
 	public void createTreePanel()
 	{
 		// Create a new tree control
-		tree = new JTree();
+		DefaultMutableTreeNode root = new DefaultMutableTreeNode("SCRUMptious");
+		DefaultMutableTreeNode sprint = new DefaultMutableTreeNode("Sprints");
+		DefaultMutableTreeNode backlog = new DefaultMutableTreeNode("Sprint 1");
+		root.add(sprint);
+		sprint.add(backlog);
+		//createNodes(top);
+		
+		tree = new JTree(root);
 	    tree.setEditable(true);
-	    tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+	    tree.getSelectionModel().setSelectionMode(TreeSelectionModel.CONTIGUOUS_TREE_SELECTION);
 	    tree.setShowsRootHandles(true);
 
 		treePanel = new JPanel();
 		treePanel.setLayout( new BorderLayout() );
 	    treePanel.add( new JScrollPane(tree) );		
+	    
 	}
 	
+	 private void createNodes(DefaultMutableTreeNode top, String name) {
+	        DefaultMutableTreeNode category = null;
+	        DefaultMutableTreeNode book = null;
+	 
+	        book = new DefaultMutableTreeNode(name);
+	        top.add(book);
+	 
+	       
+	 }
+	 
 	public void createStoryPanel()
 	{
 		storyPanel = new JPanel();
@@ -128,6 +149,17 @@ class ScrumBoard extends JFrame
         newbutton.setVerticalTextPosition(AbstractButton.BOTTOM);
         newbutton.setHorizontalTextPosition(AbstractButton.CENTER);
         newbutton.setAlignmentY(BOTTOM_ALIGNMENT);
+        //Add listener here to add to tree
+        
+        newbutton.addActionListener(new ActionListener()
+        {
+        	public void actionPerformed(ActionEvent e)
+        	{
+        		JOptionPane.showMessageDialog(null, "Working!");
+        		//createNodes(, storyField_Title.getText());
+        		
+        	}
+        });
         
         JPanel pane = new JPanel();
 //        pane.setBorder(BorderFactory.createTitledBorder(title));
@@ -146,7 +178,7 @@ class ScrumBoard extends JFrame
 
 		wallPanel.setPreferredSize( new Dimension( 400, 100 ) );
 		wallPanel.setMinimumSize( new Dimension( 100, 50 ) );
-		wallPanel.setBackground( Color.yellow );
+		wallPanel.setBackground( Color.LIGHT_GRAY );
         
 		wallPanel.add( new JLabel( "The Wall" ), BorderLayout.NORTH );
 	}
