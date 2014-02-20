@@ -1,0 +1,162 @@
+import java.awt.*;
+import java.util.ArrayList;
+
+import javax.swing.*;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeSelectionModel;
+
+class ScrumBoard extends JFrame
+{
+	protected JPanel		treePanel;
+	protected JPanel		storyPanel;
+	protected JPanel		wallPanel;
+
+	protected JTree			tree;
+	protected DefaultTreeModel treeModel;
+
+	protected JPanel		topPanel;
+
+    JTextField	storyField_Title;
+    JTextField	storyField_Sprint;
+    JTextArea	storyField_Detail;
+    JButton 	storyButton_OK;
+    
+    // model data
+    // ArrayList for stories, maybe a HashMap using key of story.id
+    // maybe with different ArrayList with ptr to the stories; these would be group by or sorted or whatever
+    // ArrayList for sprints;  as we add stories, we can add sprints on the fly
+    
+	
+	public ScrumBoard()
+	{
+		setTitle( "Scrum Board App" );
+		setBackground( Color.gray );
+		
+		setSize( 300, 400 );
+		setBackground( Color.gray );
+
+		// Create a panel to hold all other components
+		topPanel = new JPanel();
+		topPanel.setLayout( new BorderLayout() );
+		getContentPane().add( topPanel );
+
+		// Create the panels
+		createTreePanel();
+		createStoryPanel();
+		createWallPanel();
+		
+		// Create a splitter pane
+		JSplitPane splitPaneWall = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT );
+		topPanel.add( splitPaneWall, BorderLayout.CENTER );
+
+		// should this be a BoxLayout instead?  Don't really want to resize the vert.
+/*		
+		JSplitPane splitPaneTree = new JSplitPane( JSplitPane.VERTICAL_SPLIT );
+		splitPaneTree.setLeftComponent( treePanel );
+		splitPaneTree.setRightComponent( storyPanel );
+*/
+		JPanel splitPaneTree = new JPanel();
+		splitPaneTree.setLayout( new BoxLayout(splitPaneTree, BoxLayout.Y_AXIS) );
+		splitPaneTree.add( treePanel );
+		splitPaneTree.add( storyPanel );
+		
+		splitPaneWall.setLeftComponent( splitPaneTree );
+		splitPaneWall.setRightComponent( wallPanel );		
+	}
+
+	public void createTreePanel()
+	{
+		// Create a new tree control
+		tree = new JTree();
+	    tree.setEditable(true);
+	    tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+	    tree.setShowsRootHandles(true);
+
+		treePanel = new JPanel();
+		treePanel.setLayout( new BorderLayout() );
+	    treePanel.add( new JScrollPane(tree) );		
+	}
+	
+	public void createStoryPanel()
+	{
+		storyPanel = new JPanel();
+		storyPanel.setLayout( new BoxLayout(storyPanel, BoxLayout.Y_AXIS) );
+		
+		JPanel pane = new JPanel();
+		
+        pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
+        pane.add(new JLabel("Title:"));
+	    storyField_Title = new JTextField(40);
+        pane.add(storyField_Title);
+		storyPanel.add( pane );
+		
+
+		pane = new JPanel();
+		
+        pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
+        pane.add(new JLabel("Sprint:"));
+	    storyField_Sprint = new JTextField(12);
+	    pane.add(storyField_Sprint);
+		storyPanel.add( pane );
+
+		pane = new JPanel();
+		
+        pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
+        pane.add(new JLabel("Details:"));
+	    storyField_Detail = new JTextArea(8,40);
+	    pane.add(storyField_Detail);
+		storyPanel.add( pane );
+		
+	    JPanel buttons = createButtonRow();
+		storyPanel.add( buttons );
+	}
+	
+    protected JPanel createButtonRow() {
+
+    	// need to do listeners to activate/enable the Save and Undo buttons
+	    storyButton_OK = new JButton("Save");
+	    storyButton_OK.setVerticalTextPosition(AbstractButton.BOTTOM);
+	    storyButton_OK.setHorizontalTextPosition(AbstractButton.CENTER);
+        storyButton_OK.setAlignmentY(BOTTOM_ALIGNMENT);
+ 
+        JButton button2 = new JButton("Undo");
+        button2.setVerticalTextPosition(AbstractButton.BOTTOM);
+        button2.setHorizontalTextPosition(AbstractButton.CENTER);
+        button2.setAlignmentY(BOTTOM_ALIGNMENT);
+
+        JButton newbutton = new JButton("New Story");
+        newbutton.setVerticalTextPosition(AbstractButton.BOTTOM);
+        newbutton.setHorizontalTextPosition(AbstractButton.CENTER);
+        newbutton.setAlignmentY(BOTTOM_ALIGNMENT);
+        
+        JPanel pane = new JPanel();
+//        pane.setBorder(BorderFactory.createTitledBorder(title));
+        pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
+        pane.setAlignmentX(LEFT_ALIGNMENT);
+        pane.add(storyButton_OK);
+        pane.add(button2);
+        pane.add(newbutton);
+        return pane;
+    }	
+	
+	public void createWallPanel()
+	{
+		wallPanel = new JPanel();
+		wallPanel.setLayout( new BorderLayout() );
+
+		wallPanel.setPreferredSize( new Dimension( 400, 100 ) );
+		wallPanel.setMinimumSize( new Dimension( 100, 50 ) );
+		wallPanel.setBackground( Color.yellow );
+        
+		wallPanel.add( new JLabel( "The Wall" ), BorderLayout.NORTH );
+	}
+	
+	
+	public static void main( String args[] )
+	{
+		// Create an instance of the test application
+		ScrumBoard mainFrame	= new ScrumBoard();
+		mainFrame.pack();
+		mainFrame.setVisible( true );
+	}
+}
