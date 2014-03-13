@@ -10,9 +10,42 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import com.javadocking.DockingManager;
+import com.javadocking.dock.Position;
+import com.javadocking.dock.SplitDock;
+import com.javadocking.dock.TabDock;
+import com.javadocking.dockable.DefaultDockable;
+import com.javadocking.dockable.Dockable;
+import com.javadocking.dockable.DockingMode;
+import com.javadocking.model.FloatDockModel;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Connection;
+
+
+/*
+ * TODO:
+ * 		-connect button / menu item that lets user connect to his/her database
+ * 			-connection settings
+ * 		-drop down -- project properties (place where you can add/remove/etc people that can
+ * 			work on the project, change the name of the project, change background color,
+ * 			other aesthetic project properties
+ * 		-
+ * 
+ */
+
+
+
 class ScrumBoard extends JFrame
 				 implements ActionListener
 {
+	//new
+	protected JFrame frame;
+	//end new
+	
+	
 	protected JPanel		treePanel;
 	protected JPanel		storyPanel;
 	protected JPanel		wallPanel;
@@ -36,12 +69,14 @@ class ScrumBoard extends JFrame
     // maybe with different ArrayList with ptr to the stories; these would be group by or sorted or whatever
     // ArrayList for sprints;  as we add stories, we can add sprints on the fly
     DynamicTree d = new DynamicTree();
-	
+
+    
 	public ScrumBoard()
 	{
+		frame = new JFrame();
 		setTitle( "Scrum Board App" );
 		setBackground( Color.gray );
-		
+
 		setSize( 300, 400 );
 		setBackground( Color.gray );
 
@@ -51,10 +86,10 @@ class ScrumBoard extends JFrame
 		getContentPane().add( topPanel );
 
 		// Create the panels
-		
+
 		createStoryPanel();
 		createWallPanel();
-		
+
 		// Create a splitter pane
 		JSplitPane splitPaneWall = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT );
 		topPanel.add( splitPaneWall, BorderLayout.CENTER );
@@ -69,12 +104,15 @@ class ScrumBoard extends JFrame
 		splitPaneTree.setLayout( new BoxLayout(splitPaneTree, BoxLayout.Y_AXIS) );
 		splitPaneTree.add(d);
 		splitPaneTree.add( storyPanel );
-		
+
 		splitPaneWall.setLeftComponent( splitPaneTree );
-		splitPaneWall.setRightComponent( wallPanel );		
+		frame.getContentPane().add(wallPanel);
+		//splitPaneWall.setRightComponent( wallPanel );	
+		
+		createDocks(splitPaneWall);
 	}
 
-
+/*
 	public void createTreePanel()
 	{
 		// Create a new tree control
@@ -84,7 +122,7 @@ class ScrumBoard extends JFrame
 		root.add(sprint);
 		sprint.add(backlog);
 		//createNodes(top);
-		
+
 		tree = new JTree(root);
 	    tree.setEditable(true);
 	    tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -93,37 +131,39 @@ class ScrumBoard extends JFrame
 		treePanel = new JPanel();
 		treePanel.setLayout( new BorderLayout() );
 	    treePanel.add( new JScrollPane(tree) );
-	    
-	    
+
+
 	}
-	
+*/
 
 	 private void createNodes(DefaultMutableTreeNode top, String name) {
 	        DefaultMutableTreeNode category = null;
 	        DefaultMutableTreeNode book = null;
-	 
+
 	        book = new DefaultMutableTreeNode(name);
 	        top.add(book);
-	 
-	       
+
+
 	 }
 	 
+
+/*
 	public void createStoryPanel()
 	{
 		storyPanel = new JPanel();
 		storyPanel.setLayout( new BoxLayout(storyPanel, BoxLayout.Y_AXIS) );
-		
+
 		JPanel pane = new JPanel();
-		
+
         pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
         pane.add(new JLabel("Title:"));
 	    storyField_Title = new JTextField(40);
         pane.add(storyField_Title);
 		storyPanel.add( pane );
-		
+
 
 		pane = new JPanel();
-		
+
         pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
         pane.add(new JLabel("Sprint:"));
 	    storyField_Sprint = new JTextField(12);
@@ -131,17 +171,18 @@ class ScrumBoard extends JFrame
 		storyPanel.add( pane );
 
 		pane = new JPanel();
-		
+
         pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
         pane.add(new JLabel("Details:"));
 	    storyField_Detail = new JTextArea(8,40);
 	    pane.add(storyField_Detail);
 		storyPanel.add( pane );
-		
+
 	    JPanel buttons = createButtonRow();
 		storyPanel.add( buttons );
 	}
-	
+	*/
+
     protected JPanel createButtonRow() {
 
     	// need to do listeners to activate/enable the Save and Undo buttons
@@ -158,7 +199,7 @@ class ScrumBoard extends JFrame
         button2.setAlignmentY(BOTTOM_ALIGNMENT);
         button2.setActionCommand(UNDO);
         button2.addActionListener(this);
-
+        
         JButton newbutton = new JButton("New Story");
         newbutton.setVerticalTextPosition(AbstractButton.BOTTOM);
         newbutton.setHorizontalTextPosition(AbstractButton.CENTER);
@@ -166,6 +207,7 @@ class ScrumBoard extends JFrame
         newbutton.setActionCommand(NEW_STORY);   //Adds listener
         newbutton.addActionListener(this);
         	
+        
      
         
         JPanel pane = new JPanel();
@@ -181,16 +223,39 @@ class ScrumBoard extends JFrame
     public void actionPerformed(ActionEvent e)  //Handles actions
 	{
 		String command = e.getActionCommand();
-		
+
 		if(NEW_STORY.equals(command))
+		{
+			UserStory u = new UserStory();
+			u.SetTitle(storyField_Title.getText());
+			u.SetSprint(Integer.parseInt(storyField_Sprint.getText()));
+			u.SetText(storyField_Detail.getText());
+			JOptionPane.showMessageDialog(null, "Title: "+u.GetTitle());
+			JOptionPane.showMessageDialog(null, "Sprint: "+u.GetSprint());
+			JOptionPane.showMessageDialog(null, "Text: "+u.GetTitle());
+			//workspace.add(u, uniqueidentifier);
+			//hey i clicked the same item in the tree
+			//g = workspace.get()
+			//storyField_Title.set(g.title)
+			//storyField_Title.setText(u.GetText());
+			
+			/*String temp;
+			for(int i = 0; i < storyField_Detail.getText().length(); i++)
+			{
+				temp = storyField_Detail.getText().split(" ", storyField_Detail.getText().length()); 
+			}*/
+//			u.SetSprint(Integer.parseInt(storyField_Sprint);
+		
 			d.addObject(storyField_Title.getText());
+			
+		}
 		else if((UNDO).equals(command))
 			d.removeCurrentNode();
 		else if((SAVE).equals(command))
 			JOptionPane.showMessageDialog(null, "Save that shit!");
-		
+
 	}
-	
+/*
 	public void createWallPanel()
 	{
 		wallPanel = new JPanel();
@@ -202,6 +267,272 @@ class ScrumBoard extends JFrame
         
 		wallPanel.add( new JLabel( "The Wall" ), BorderLayout.NORTH );
 	}
+*/
+	public void createWallPanel()
+	{
+	Color newBlue = new Color(126,145,230);
+	wallPanel = new JPanel();
+	wallPanel.setLayout( new BorderLayout() );
+
+	wallPanel.setPreferredSize( new Dimension( 400, 100 ) );
+	wallPanel.setMinimumSize( new Dimension( 100, 50 ) );
+	wallPanel.setBackground(newBlue);
+	        
+	wallPanel.add( new JLabel( "The Wall" ), BorderLayout.NORTH );
+	}
+
+
+
+
+	public void createStoryPanel()
+	{
+		/*/ #### DATABASE CONNECTION CODE #### 
+		Connection con = null;
+		String dbName = "SCRUMptious";
+		DBConnect c = new DBConnect();
+		//LoadDriver d = new LoadDriver();
+				
+		try {
+			d.load();
+		} catch (InstantiationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IllegalAccessException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (ClassNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
+			con = c.Connect();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// ##### END DATABASE CONNECT CODE #####	*/	
+		
+		
+		
+		
+	storyPanel = new JPanel();
+	storyPanel.setLayout( new BoxLayout(storyPanel, BoxLayout.PAGE_AXIS) );
+
+	
+    String[] petStrings = { "Sprint", "Team Member", "Backlog Item", "Board", "Things" };
+    
+    //Create the combo box, select the item at index 4.
+    //Indices start at 0, so 4 specifies the pig.
+    JComboBox petList = new JComboBox(petStrings);
+    //add(petList, BorderLayout.LINE_END);
+
+	JPanel pane = new JPanel();
+
+	pane.add(petList);
+	
+	JLabel fieldName = new JLabel("Title:     ");
+	storyField_Title = new JTextField(12);
+
+			pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
+	        pane.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+	        
+	        pane.add(fieldName);
+	        pane.add(storyField_Title);
+	        storyPanel.add(pane);
+
+	
+	pane = new JPanel();
+	fieldName = new JLabel("Sprint:  ");
+	storyField_Sprint = new JTextField(12);
+	      
+			pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
+	        pane.setBorder(BorderFactory.createEmptyBorder(0,10,10,10));
+	        
+	        pane.add(fieldName);
+	        pane.add(storyField_Sprint);
+	        storyPanel.add(pane);
+	        
+	pane = new JPanel();
+	fieldName = new JLabel("Details: ");
+	JTextArea text;
+	String match_string[] = {"Spencer"};
+	String match_column[] = {"Name"};
+	
+	/*try {
+		text = new JTextArea(
+				DBQuery.DBRowSearch(con, dbName, "User", "Name", match_string, match_column)		
+				, 5,10);
+		text.setLineWrap(true);
+	    text.setWrapStyleWord(true);
+	    storyField_Detail = text;
+	} catch (SQLException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}*/
+	//change storyField_Detail type to JScrollPane?
+	JScrollPane scrollPane = new JScrollPane(storyField_Detail);
+
+	        pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
+	        //pane.add(new JLabel("Details: "));
+	        pane.setBorder(BorderFactory.createEmptyBorder(0,10,10,10));
+	        //storyField_Detail = new JTextArea("Type Here", 5,10);
+
+	        //JScrollPane scrollPane = new JScrollPane(storyField_Detail);
+
+	        pane.add(fieldName);
+	        pane.add(scrollPane);
+	        //pane.add(storyField_Detail);
+	        storyPanel.add( pane );       
+	        
+	/*
+	pane = new JPanel();
+	fieldType = new JLabel("Details: ");
+	storyField_Detail = new JTextArea("Type Here", 5,10);
+			storyField_Detail.setLineWrap(true);
+			storyField_Detail.setWrapStyleWord(true);
+	JScrollPane scrollPane = new JScrollPane(storyField_Detail);
+			pane.setLayout(new BoxLayout(pane, BoxLayout.PAGE_AXIS));
+			pane.setBorder(BorderFactory.createEmptyBorder(0,10,10,10));
+			
+			
+			pane.add(fieldType);
+			pane.add(storyField_Detail);
+			pane.add(scrollPane);
+			storyPanel.add( pane );
+	*/
+	pane = new JPanel();
+
+	pane.setLayout(new BoxLayout(pane, BoxLayout.PAGE_AXIS));
+
+	pane.setBorder(BorderFactory.createEmptyBorder(0,10,10,10));
+	storyPanel.add( pane );
+	JPanel buttons = createButtonRow();
+	storyPanel.add( buttons );
+
+	}
+	
+
+
+//NEW 
+	
+	public void createDocks(JSplitPane splitPaneWall)
+	{
+		
+	    MyInternalFrame intframe = new MyInternalFrame();
+			 intframe.setVisible(true);
+			// splitPaneWall.add(intframe);
+			 try {
+		            intframe.setSelected(true);
+		        } catch (java.beans.PropertyVetoException e) {}
+		    
+		    
+	    
+		/* #### DATABASE CONNECTION CODE #### 
+		Connection con = null;
+		String dbName = "SCRUMptious";
+		DBConnect c = new DBConnect();
+		LoadDriver d = new LoadDriver();
+				
+		try {
+			d.load();
+		} catch (InstantiationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IllegalAccessException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (ClassNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
+			con = c.Connect();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// ##### END DATABASE CONNECT CODE #####*/		    
+	    // Create the content components.
+		
+		String match_string[] = {"1"};
+		String match_column[] = {"PID"};
+		
+		
+	    TextPanel textPanel1 = new TextPanel("The Wall");
+	    TextPanel textPanel2 = new TextPanel("I am window 2.");
+	    TextPanel textPanel3 = new TextPanel("I am window 3.");
+	    
+	    Dockable dockable1 = null;
+	    Dockable dockable2 = null;
+	    Dockable dockable3 = null; 
+		//try {
+			dockable1 = new DefaultDockable("Window 1", intframe, "Window 1", null, DockingMode.ALL);
+			match_string[0] = "e";
+			match_column[0] = "Name";			
+		    dockable2 = new DefaultDockable("Window 2", textPanel2, "Window 2", null, DockingMode.ALL);
+			match_string[0] = "s";
+			match_column[0] = "Name";			
+		    dockable3 = new DefaultDockable("Window 3", textPanel3, "Window 3", null, DockingMode.ALL);
+		//} catch (SQLException e) {
+			// TODO Auto-generated catch block
+		//	e.printStackTrace();
+		//}
+	    
+	    
+	    //Create the tab docks.
+	    TabDock topTabDock = new TabDock();
+	    TabDock bottomTabDock = new TabDock();
+	    TabDock rightTabDock = new TabDock();
+	    
+	    //Add the dockables to these tab docks.
+	    topTabDock.addDockable(dockable1,  new Position(0));
+	    topTabDock.addDockable(dockable2, new Position(1));
+	    topTabDock.addDockable(dockable3, new Position(2));
+	    
+	    //The windows of the tab docks should be able to split.
+	    //Put the tab docks in split docks.
+	    
+	    SplitDock topSplitDock = new SplitDock();
+	    topSplitDock.addChildDock(topTabDock,  new Position(Position.CENTER));
+	    SplitDock bottomSplitDock = new SplitDock();
+	    bottomSplitDock.addChildDock(bottomTabDock, new Position(Position.CENTER));
+	    SplitDock rightSplitDock = new SplitDock();
+	    rightSplitDock.addChildDock(rightTabDock, new Position(Position.CENTER));
+	    
+	    
+	    //Create the dock model for the docks.
+	    FloatDockModel dockModel = new FloatDockModel();
+	    dockModel.addOwner("frame0", frame);
+	    DockingManager.setDockModel(dockModel);
+	    
+	    //Add the 3 root docks to the dock model
+	    dockModel.addRootDock("topdock", topSplitDock, frame);
+	    dockModel.addRootDock("bottomdock", bottomSplitDock, frame);
+	    dockModel.addRootDock("rightdock", rightSplitDock, frame);
+	    
+	  //Add the root docks to the split panes
+	    splitPaneWall.setRightComponent(topSplitDock);
+
+
+
+	}
+
+
+//END NEW
+	
+	
+	
+	
+	
+	
 	
 	
 	public static void main( String args[] )
@@ -211,4 +542,6 @@ class ScrumBoard extends JFrame
 		mainFrame.pack();
 		mainFrame.setVisible( true );
 	}
+	
+	
 }
